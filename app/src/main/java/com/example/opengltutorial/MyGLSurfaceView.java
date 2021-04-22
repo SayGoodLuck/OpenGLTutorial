@@ -3,9 +3,12 @@ package com.example.opengltutorial;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.MotionEvent;
 
 class MyGLSurfaceView extends GLSurfaceView {
+
+    private static final String TAG = "SurfaceView";
 
     private final MyGLRenderer renderer;
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
@@ -16,11 +19,10 @@ class MyGLSurfaceView extends GLSurfaceView {
         super(context);
 
         // Create an OpenGL ES 2.0 context
-        setEGLContextClientVersion(2);
-
-        renderer = new MyGLRenderer();
+        setEGLContextClientVersion(3);
 
         // Set the Renderer for drawing on the GLSurfaceView
+        renderer = new MyGLRenderer();
         setRenderer(renderer);
 
         // Render the view only when there is a change in the drawing data
@@ -33,7 +35,7 @@ class MyGLSurfaceView extends GLSurfaceView {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
-
+        Log.i(TAG, "Touch in onTouchEvent");
         float x = e.getX();
         float y = e.getY();
 
@@ -57,6 +59,7 @@ class MyGLSurfaceView extends GLSurfaceView {
                         renderer.getAngle() +
                                 ((dx + dy) * TOUCH_SCALE_FACTOR));
                 requestRender();
+
         }
 
         previousX = x;

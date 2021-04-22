@@ -1,5 +1,7 @@
 package com.example.opengltutorial;
 
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -7,6 +9,8 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
 class Cube {
+
+    private static final String TAG = "Cube";
 
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mColorBuffer;
@@ -22,6 +26,7 @@ class Cube {
             1.0f,  1.0f,  1.0f,
             -1.0f,  1.0f,  1.0f
     };
+
     private float colors[] = {
             0.0f,  1.0f,  0.0f,  1.0f,
             0.0f,  1.0f,  0.0f,  1.0f,
@@ -58,6 +63,7 @@ class Cube {
         mIndexBuffer = ByteBuffer.allocateDirect(indices.length);
         mIndexBuffer.put(indices);
         mIndexBuffer.position(0);
+        Log.d(TAG, " cube constructor");
     }
 
     public void draw(GL10 gl) {

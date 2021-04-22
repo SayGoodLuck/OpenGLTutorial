@@ -3,12 +3,14 @@ package com.example.opengltutorial;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class MyGLRenderer implements GLSurfaceView.Renderer {
 
+    private final String TAG = "Renderer";
     private Triangle mTriangle;
     private Square mSquare;
 
@@ -20,14 +22,16 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public volatile float mAngle;
 
+    @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         mTriangle = new Triangle();
+        Log.d(TAG, " onSurfaceCreated");
 
     }
-
+    @Override
     public void onDrawFrame(GL10 unused) {
         float[] scratch = new float[16];
 
