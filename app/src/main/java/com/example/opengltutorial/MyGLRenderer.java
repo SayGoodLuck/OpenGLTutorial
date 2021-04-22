@@ -3,7 +3,6 @@ package com.example.opengltutorial;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -11,7 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private Triangle mTriangle;
-    private Square   mSquare;
+    private Square mSquare;
 
     // vPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] vPMatrix = new float[16];
@@ -67,7 +66,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     }
 
 
-    public static int loadShader(int type, String shaderCode){
+    public static int loadShader(int type, String shaderCode) {
 
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
@@ -79,6 +78,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
+
     public float getAngle() {
         return mAngle;
     }
