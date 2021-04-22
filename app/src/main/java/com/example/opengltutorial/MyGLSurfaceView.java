@@ -1,6 +1,7 @@
 package com.example.opengltutorial;
 
 import android.content.Context;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 class MyGLSurfaceView extends GLSurfaceView {
@@ -17,6 +18,12 @@ class MyGLSurfaceView extends GLSurfaceView {
 
         // Set the Renderer for drawing on the GLSurfaceView
         setRenderer(renderer);
+
+        // Render the view only when there is a change in the drawing data
+        //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
     }
+
+
 }
 
