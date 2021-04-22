@@ -27,6 +27,7 @@ class MyGLSurfaceView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
     }
+
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         // MotionEvent reports input details from the touch screen
@@ -62,7 +63,5 @@ class MyGLSurfaceView extends GLSurfaceView {
         previousY = y;
         return true;
     }
-
-
 }
 
