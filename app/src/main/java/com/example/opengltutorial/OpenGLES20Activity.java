@@ -13,7 +13,6 @@ import android.view.View;
 public class OpenGLES20Activity extends Activity {
 
     private final String TAG = "Activity";
-    private GLSurfaceView gLView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
