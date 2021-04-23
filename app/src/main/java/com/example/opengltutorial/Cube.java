@@ -1,85 +1,248 @@
 package com.example.opengltutorial;
 
-import android.util.Log;
+/**
+ * Created by Seker on 7/2/2015.
+ *
+ *
+ * This code actually will draw a cube.
+ *
+ * Some of the code is used from https://github.com/christopherperry/cube-rotation
+ * and changed up to opengl 3.0
+ */
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import javax.microedition.khronos.opengles.GL10;
+import android.opengl.GLES30;
+import android.util.Log;
 
-class Cube {
+import com.example.opengltutorial.MyGLRenderer;
 
-    private static final String TAG = "Cube";
+public class Cube {
+    private int mProgramObject;
+    private int mMVPMatrixHandle;
+    private int mColorHandle;
+    private FloatBuffer mVertices;
 
-    private FloatBuffer mVertexBuffer;
-    private FloatBuffer mColorBuffer;
-    private ByteBuffer mIndexBuffer;
+    //initial size of the cube.  set here, so it is easier to change later.
+    float size = 0.4f;
 
-    private float vertices[] = {
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f,  1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-            1.0f, -1.0f,  1.0f,
-            1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f
+    //this is the initial data, which will need to translated into the mVertices variable in the consturctor.
+    float[] mVerticesData = new float[]{
+            ////////////////////////////////////////////////////////////////////
+            // FRONT
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            -size, size, size, // top-left
+            -size, -size, size, // bottom-left
+            size, -size, size, // bottom-right
+            // Triangle 2
+            size, -size, size, // bottom-right
+            size, size, size, // top-right
+            -size, size, size, // top-left
+            ////////////////////////////////////////////////////////////////////
+            // BACK
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            -size, size, -size, // top-left
+            -size, -size, -size, // bottom-left
+            size, -size, -size, // bottom-right
+            // Triangle 2
+            size, -size, -size, // bottom-right
+            size, size, -size, // top-right
+            -size, size, -size, // top-left
+
+            ////////////////////////////////////////////////////////////////////
+            // LEFT
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            -size, size, -size, // top-left
+            -size, -size, -size, // bottom-left
+            -size, -size, size, // bottom-right
+            // Triangle 2
+            -size, -size, size, // bottom-right
+            -size, size, size, // top-right
+            -size, size, -size, // top-left
+            ////////////////////////////////////////////////////////////////////
+            // RIGHT
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            size, size, -size, // top-left
+            size, -size, -size, // bottom-left
+            size, -size, size, // bottom-right
+            // Triangle 2
+            size, -size, size, // bottom-right
+            size, size, size, // top-right
+            size, size, -size, // top-left
+
+            ////////////////////////////////////////////////////////////////////
+            // TOP
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            -size, size, -size, // top-left
+            -size, size, size, // bottom-left
+            size, size, size, // bottom-right
+            // Triangle 2
+            size, size, size, // bottom-right
+            size, size, -size, // top-right
+            -size, size, -size, // top-left
+            ////////////////////////////////////////////////////////////////////
+            // BOTTOM
+            ////////////////////////////////////////////////////////////////////
+            // Triangle 1
+            -size, -size, -size, // top-left
+            -size, -size, size, // bottom-left
+            size, -size, size, // bottom-right
+            // Triangle 2
+            size, -size, size, // bottom-right
+            size, -size, -size, // top-right
+            -size, -size, -size // top-left
     };
 
-    private float colors[] = {
-            0.0f,  1.0f,  0.0f,  1.0f,
-            0.0f,  1.0f,  0.0f,  1.0f,
-            1.0f,  0.5f,  0.0f,  1.0f,
-            1.0f,  0.5f,  0.0f,  1.0f,
-            1.0f,  0.0f,  0.0f,  1.0f,
-            1.0f,  0.0f,  0.0f,  1.0f,
-            0.0f,  0.0f,  1.0f,  1.0f,
-            1.0f,  0.0f,  1.0f,  1.0f
-    };
+    float colorCyan[] = MyColor.cyan();
+    float colorBlue[] = MyColor.blue();
+    float colorRed[] = MyColor.red();
+    float colorGray[] = MyColor.gray();
+    float colorGreen[] = MyColor.green();
+    float colorYellow[] = MyColor.yellow();
 
-    private byte indices[] = {
-            0, 4, 5, 0, 5, 1,
-            1, 5, 6, 1, 6, 2,
-            2, 6, 7, 2, 7, 3,
-            3, 7, 4, 3, 4, 0,
-            4, 7, 6, 4, 6, 5,
-            3, 0, 1, 3, 1, 2
-    };
+    //vertex shader code
+    String vShaderStr =
+            "#version 300 es 			  \n"
+                    + "uniform mat4 uMVPMatrix;     \n"
+                    + "in vec4 vPosition;           \n"
+                    + "void main()                  \n"
+                    + "{                            \n"
+                    + "   gl_Position = uMVPMatrix * vPosition;  \n"
+                    + "}                            \n";
+    //fragment shader code.
+    String fShaderStr =
+            "#version 300 es		 			          	\n"
+                    + "precision mediump float;					  	\n"
+                    + "uniform vec4 vColor;	 			 		  	\n"
+                    + "out vec4 fragColor;	 			 		  	\n"
+                    + "void main()                                  \n"
+                    + "{                                            \n"
+                    + "  fragColor = vColor;                    	\n"
+                    + "}                                            \n";
 
+    String TAG = "Cube";
+
+
+    //finally some methods
+    //constructor
     public Cube() {
-        ByteBuffer byteBuf = ByteBuffer.allocateDirect(vertices.length * 4);
-        byteBuf.order(ByteOrder.nativeOrder());
-        mVertexBuffer = byteBuf.asFloatBuffer();
-        mVertexBuffer.put(vertices);
-        mVertexBuffer.position(0);
+        //first setup the mVertices correctly.
+        mVertices = ByteBuffer
+                .allocateDirect(mVerticesData.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+                .put(mVerticesData);
+        mVertices.position(0);
 
-        byteBuf = ByteBuffer.allocateDirect(colors.length * 4);
-        byteBuf.order(ByteOrder.nativeOrder());
-        mColorBuffer = byteBuf.asFloatBuffer();
-        mColorBuffer.put(colors);
-        mColorBuffer.position(0);
+        //setup the shaders
+        int vertexShader;
+        int fragmentShader;
+        int programObject;
+        int[] linked = new int[1];
 
-        mIndexBuffer = ByteBuffer.allocateDirect(indices.length);
-        mIndexBuffer.put(indices);
-        mIndexBuffer.position(0);
-        Log.d(TAG, " cube constructor");
+        // Load the vertex/fragment shaders
+        vertexShader = MyGLRenderer.LoadShader(GLES30.GL_VERTEX_SHADER, vShaderStr);
+        fragmentShader = MyGLRenderer.LoadShader(GLES30.GL_FRAGMENT_SHADER, fShaderStr);
+
+        // Create the program object
+        programObject = GLES30.glCreateProgram();
+
+        if (programObject == 0) {
+            Log.e(TAG, "So some kind of error, but what?");
+            return;
+        }
+
+        GLES30.glAttachShader(programObject, vertexShader);
+        GLES30.glAttachShader(programObject, fragmentShader);
+
+        // Bind vPosition to attribute 0
+        GLES30.glBindAttribLocation(programObject, 0, "vPosition");
+
+        // Link the program
+        GLES30.glLinkProgram(programObject);
+
+        // Check the link status
+        GLES30.glGetProgramiv(programObject, GLES30.GL_LINK_STATUS, linked, 0);
+
+        if (linked[0] == 0) {
+            Log.e(TAG, "Error linking program:");
+            Log.e(TAG, GLES30.glGetProgramInfoLog(programObject));
+            GLES30.glDeleteProgram(programObject);
+            return;
+        }
+
+        // Store the program object
+        mProgramObject = programObject;
+
+        //now everything is setup and ready to draw.
     }
 
-    public void draw(GL10 gl) {
-        gl.glFrontFace(GL10.GL_CW);
+    public void draw(float[] mvpMatrix) {
 
-        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
-        gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
+        // Use the program object
+        GLES30.glUseProgram(mProgramObject);
 
-        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+        // get handle to shape's transformation matrix
+        mMVPMatrixHandle = GLES30.glGetUniformLocation(mProgramObject, "uMVPMatrix");
+        MyGLRenderer.checkGlError("glGetUniformLocation");
 
-        gl.glDrawElements(GL10.GL_TRIANGLES, 36, GL10.GL_UNSIGNED_BYTE,
-                mIndexBuffer);
+        // get handle to fragment shader's vColor member
+        mColorHandle = GLES30.glGetUniformLocation(mProgramObject, "vColor");
 
-        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-        gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+
+        // Apply the projection and view transformation
+        GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+        MyGLRenderer.checkGlError("glUniformMatrix4fv");
+
+        int VERTEX_POS_INDX = 0;
+        mVertices.position(VERTEX_POS_INDX);  //just in case.  We did it already though.
+
+        //add all the points to the space, so they can be correct by the transformations.
+        //would need to do this even if there were no transformations actually.
+        GLES30.glVertexAttribPointer(VERTEX_POS_INDX, 3, GLES30.GL_FLOAT,
+                false, 0, mVertices);
+        GLES30.glEnableVertexAttribArray(VERTEX_POS_INDX);
+
+        //Now we are ready to draw the cube finally.
+        int startPos =0;
+        int verticesPerface = 6;
+
+        //draw front face
+        GLES30.glUniform4fv(mColorHandle, 1, colorBlue, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,startPos,verticesPerface);
+        startPos += verticesPerface;
+
+        //draw back face
+        GLES30.glUniform4fv(mColorHandle, 1, colorCyan, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, startPos, verticesPerface);
+        startPos += verticesPerface;
+
+        //draw left face
+        GLES30.glUniform4fv(mColorHandle, 1, colorRed, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,startPos,verticesPerface);
+        startPos += verticesPerface;
+
+        //draw right face
+        GLES30.glUniform4fv(mColorHandle, 1, colorGray, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,startPos,verticesPerface);
+        startPos += verticesPerface;
+
+        //draw top face
+        GLES30.glUniform4fv(mColorHandle, 1, colorGreen, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,startPos,verticesPerface);
+        startPos += verticesPerface;
+
+        //draw bottom face
+        GLES30.glUniform4fv(mColorHandle, 1, colorYellow, 0);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,startPos,verticesPerface);
+        //last face, so no need to increment.
+
     }
 }
-

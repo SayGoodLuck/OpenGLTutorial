@@ -1,89 +1,179 @@
 package com.example.opengltutorial;
 
-import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
+import android.content.Context;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
+import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+/**
+ * Created by Seker on 7/2/2015.
+ *
+ *
+ * Some code is uses from the OpenGL ES 3.0 programming guide second edition book.  used under the MIT license.
+ *
+ */
 public class MyGLRenderer implements GLSurfaceView.Renderer {
 
-    private final String TAG = "Renderer";
-    private Triangle mTriangle;
-    private Square mSquare;
-    private Cube mCube;
-    private float mCubeRotation;
+    private int mWidth;
+    private int mHeight;
+    private static String TAG = "myRenderer";
+    public Cube mCube;
+    private float mAngle =0;
+    private float mTransY=0;
+    private float mTransX=0;
+    private static final float Z_NEAR = 1f;
+    private static final float Z_FAR = 40f;
 
-    // vPMatrix is an abbreviation for "Model View Projection Matrix"
-    private final float[] vPMatrix = new float[16];
-    private final float[] projectionMatrix = new float[16];
-    private final float[] viewMatrix = new float[16];
-    private float[] rotationMatrix = new float[16];
+    // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
+    private final float[] mMVPMatrix = new float[16];
+    private final float[] mProjectionMatrix = new float[16];
+    private final float[] mViewMatrix = new float[16];
+    private final float[] mRotationMatrix = new float[16];
 
-    public volatile float mAngle;
-
-    @Override
-    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        // Set the background frame color
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-        mTriangle = new Triangle();
-        mCube = new Cube();
-        Log.d(TAG, " onSurfaceCreated");
-
+    //
+    public MyGLRenderer(Context context) {
+        //cube can not be instianated here, because of "no egl context"  no clue.
+        //do it in onSurfaceCreate and it is fine.  odd, but workable solution.
     }
+    ///
+    // Create a shader object, load the shader source, and
+    // compile the shader.
+    //
+    public static int LoadShader(int type, String shaderSrc) {
+        int shader;
+        int[] compiled = new int[1];
 
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-        gl.glLoadIdentity();
+        // Create the shader object
+        shader = GLES30.glCreateShader(type);
 
-        gl.glTranslatef(0.0f, 0.0f, -10.0f);
-        gl.glRotatef(mCubeRotation, 1.0f, 1.0f, 1.0f);
+        if (shader == 0) {
+            return 0;
+        }
 
-        mCube.draw(gl);
+        // Load the shader source
+        GLES30.glShaderSource(shader, shaderSrc);
 
-        gl.glLoadIdentity();
+        // Compile the shader
+        GLES30.glCompileShader(shader);
 
-        mCubeRotation -= 0.15f;
-    }
+        // Check the compile status
+        GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, compiled, 0);
 
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        gl.glViewport(0, 0, width, height);
-        gl.glMatrixMode(GL10.GL_PROJECTION);
-        gl.glLoadIdentity();
-        GLU.gluPerspective(gl, 45.0f, (float)width / (float)height, 0.1f, 100.0f);
-        gl.glViewport(0, 0, width, height);
-
-        gl.glMatrixMode(GL10.GL_MODELVIEW);
-        gl.glLoadIdentity();
-    }
-
-
-    public static int loadShader(int type, String shaderCode) {
-
-        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
-        int shader = GLES20.glCreateShader(type);
-
-        // add the source code to the shader and compile it
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
+        if (compiled[0] == 0) {
+            Log.e(TAG, "Erorr!!!!");
+            Log.e(TAG, GLES30.glGetShaderInfoLog(shader));
+            GLES30.glDeleteShader(shader);
+            return 0;
+        }
 
         return shader;
     }
 
-    public float getAngle() {
-        return mAngle;
+    /**
+     * Utility method for debugging OpenGL calls. Provide the name of the call
+     * just after making it:
+     *
+     * <pre>
+     * mColorHandle = GLES30.glGetUniformLocation(mProgram, "vColor");
+     * MyGLRenderer.checkGlError("glGetUniformLocation");</pre>
+     *
+     * If the operation is not successful, the check throws an error.
+     *
+     * @param glOperation - Name of the OpenGL call to check.
+     */
+    public static void checkGlError(String glOperation) {
+        int error;
+        while ((error = GLES30.glGetError()) != GLES30.GL_NO_ERROR) {
+            Log.e(TAG, glOperation + ": glError " + error);
+            throw new RuntimeException(glOperation + ": glError " + error);
+        }
     }
 
-    public void setAngle(float angle) {
-        mAngle = angle;
+    ///
+    // Initialize the shader and program object
+    //
+    public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+
+
+        //set the clear buffer color to light gray.
+        //GLES30.glClearColor(0.9f, .9f, 0.9f, 0.9f);
+        //set the clear buffer color to a dark grey.
+        GLES30.glClearColor(0.1f, .1f, 0.1f, 0.9f);
+        //initialize the cube code for drawing.
+        mCube = new Cube();
+        //if we had other objects setup them up here as well.
+    }
+
+    // /
+    // Draw a triangle using the shader pair created in onSurfaceCreated()
+    //
+    public void onDrawFrame(GL10 glUnused) {
+
+        // Clear the color buffer  set above by glClearColor.
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+
+        //need this otherwise, it will over right stuff and the cube will look wrong!
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+
+        // Set the camera position (View matrix)  note Matrix is an include, not a declared method.
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+        // Create a rotation and translation for the cube
+        Matrix.setIdentityM(mRotationMatrix, 0);
+
+        //move the cube up/down and left/right
+        Matrix.translateM(mRotationMatrix, 0, mTransX, mTransY, 0);
+
+        //mangle is how fast, x,y,z which directions it rotates.
+        Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
+
+        // combine the model with the view matrix
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mRotationMatrix, 0);
+
+        // combine the model-view with the projection matrix
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+
+        mCube.draw(mMVPMatrix);
+
+        //change the angle, so the cube will spin.
+        mAngle+=.4;
+
+    }
+
+    // /
+    // Handle surface changes
+    //
+    public void onSurfaceChanged(GL10 glUnused, int width, int height) {
+        mWidth = width;
+        mHeight = height;
+        // Set the viewport
+        GLES30.glViewport(0, 0, mWidth, mHeight);
+        float aspect = (float) width / height;
+
+        // this projection matrix is applied to object coordinates
+        //no idea why 53.13f, it was used in another example and it worked.
+        Matrix.perspectiveM(mProjectionMatrix, 0, 53.13f, aspect, Z_NEAR, Z_FAR);
+    }
+
+    //used the touch listener to move the cube up/down (y) and left/right (x)
+    public float getY() {
+        return mTransY;
+    }
+
+    public void setY(float mY) {
+        mTransY = mY;
+    }
+
+    public float getX() {
+        return mTransX;
+    }
+
+    public void setX(float mX) {
+        mTransX = mX;
     }
 
 }
-
