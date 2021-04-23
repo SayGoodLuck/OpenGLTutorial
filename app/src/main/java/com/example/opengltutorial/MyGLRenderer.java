@@ -2,8 +2,8 @@ package com.example.opengltutorial;
 
 import android.content.Context;
 import android.opengl.GLES30;
-import android.opengl.Matrix;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -11,10 +11,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by Seker on 7/2/2015.
- *
- *
+ * <p>
+ * <p>
  * Some code is uses from the OpenGL ES 3.0 programming guide second edition book.  used under the MIT license.
- *
  */
 public class MyGLRenderer implements GLSurfaceView.Renderer {
 
@@ -22,9 +21,12 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private int mHeight;
     private static String TAG = "myRenderer";
     public Cube mCube;
-    private float mAngle =0;
-    private float mTransY=0;
-    private float mTransX=0;
+    private float mAngle = 0;
+    private float mAngleX = 0;
+    private float mAngleY = 0;
+    private float mAngleZ = 0;
+
+
     private static final float Z_NEAR = 1f;
     private static final float Z_FAR = 40f;
 
@@ -39,6 +41,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         //cube can not be instianated here, because of "no egl context"  no clue.
         //do it in onSurfaceCreate and it is fine.  odd, but workable solution.
     }
+
     ///
     // Create a shader object, load the shader source, and
     // compile the shader.
@@ -80,7 +83,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
      * <pre>
      * mColorHandle = GLES30.glGetUniformLocation(mProgram, "vColor");
      * MyGLRenderer.checkGlError("glGetUniformLocation");</pre>
-     *
+     * <p>
      * If the operation is not successful, the check throws an error.
      *
      * @param glOperation - Name of the OpenGL call to check.
@@ -126,11 +129,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(mRotationMatrix, 0);
 
         //move the cube up/down and left/right
-        Matrix.translateM(mRotationMatrix, 0, mTransX, mTransY, 0);
+        Matrix.translateM(mRotationMatrix, 0, 0, 0, mAngleZ);
 
         //mangle is how fast, x,y,z which directions it rotates.
+        //Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
+        // Matrix.rotateM(mRotationMatrix, 0, mAngleZ, 0.0f, 0.0f, 1.0f);
+        Matrix.rotateM(mRotationMatrix, 0, mAngleY, 1.0f, 0.0f, 0.0f);
+        Matrix.rotateM(mRotationMatrix, 0, mAngleX, 0.0f, 1.0f, 0.0f);
         Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
-
         // combine the model with the view matrix
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mRotationMatrix, 0);
 
@@ -140,8 +146,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         mCube.draw(mMVPMatrix);
 
         //change the angle, so the cube will spin.
-        mAngle+=.4;
-
+        mAngle += .4;
     }
 
     // /
@@ -159,21 +164,29 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         Matrix.perspectiveM(mProjectionMatrix, 0, 53.13f, aspect, Z_NEAR, Z_FAR);
     }
 
-    //used the touch listener to move the cube up/down (y) and left/right (x)
-    public float getY() {
-        return mTransY;
+    //used the touch listener to rotate the cube up/down (y) and left/right (x)
+    public float getAngleX() {
+        return mAngleX;
     }
 
-    public void setY(float mY) {
-        mTransY = mY;
+    public float getAngleY() {
+        return mAngleY;
     }
 
-    public float getX() {
-        return mTransX;
+    public void setAngle(float angle) {
+        mAngle = angle;
     }
 
-    public void setX(float mX) {
-        mTransX = mX;
+    public float getAngle() {
+        return mAngle;
+    }
+
+    public void setAngleX(float mAngleX) {
+        this.mAngleX = mAngleX;
+    }
+
+    public void setAngleY(float mAngleY) {
+        this.mAngleY = mAngleY;
     }
 
 }

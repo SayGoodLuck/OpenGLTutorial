@@ -2,7 +2,11 @@ package com.example.opengltutorial;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+
+import static android.view.MotionEvent.INVALID_POINTER_ID;
 
 /*
  * simple extention of the GLsurfaceview.  basically setup to use opengl 3.0
@@ -13,10 +17,19 @@ import android.view.MotionEvent;
 
 public class MyGLSurfaceView extends GLSurfaceView {
 
-    MyGLRenderer renderer;
+    private static final String TAG = "MyGLSurfaceView: ";
+
+    private MyGLRenderer renderer;
+
+    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
+    private float previousX;
+    private float previousY;
+
+    private float mScaleFactor = 1.0f;
 
     public MyGLSurfaceView(Context context) {
         super(context);
+
         // Create an OpenGL ES 3.0 context.
         setEGLContextClientVersion(3);
 
@@ -28,38 +41,44 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+        //mScaleDetector = new ScaleGestureDetector(context, new MyGestureListener());
+        Log.e(TAG, "message from MyGLSurfaceView()");
     }
 
-
-    //private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
-    private static final float TOUCH_SCALE_FACTOR = 0.015f;
-    private float mPreviousX;
-    private float mPreviousY;
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
+            mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
+            Log.e(TAG, "message from ScaleListener()");
+            //renderer.setScale(mScaleFactor);
+            return true;
+        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
-
         float x = e.getX();
         float y = e.getY();
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
 
-                float dx = x - mPreviousX;
-                //subtract, so the cube moves the same direction as your finger.
-                //with plus it moves the opposite direction.
-                renderer.setX(renderer.getX() - (dx * TOUCH_SCALE_FACTOR));
+                float dx = x - previousX;
+                float dy = y - previousY;
 
-                float dy = y - mPreviousY;
-                renderer.setY(renderer.getY() - (dy * TOUCH_SCALE_FACTOR));
+                renderer.setAngleX(renderer.getAngleX() + dx * TOUCH_SCALE_FACTOR);
+                renderer.setAngleY(renderer.getAngleY() + dy * TOUCH_SCALE_FACTOR);
+
+                requestRender();
         }
 
-        mPreviousX = x;
-        mPreviousY = y;
+        previousX = x;
+        previousY = y;
         return true;
     }
-
 }
