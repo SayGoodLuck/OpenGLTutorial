@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
-import static android.view.MotionEvent.INVALID_POINTER_ID;
-
 /*
  * simple extention of the GLsurfaceview.  basically setup to use opengl 3.0
  * and set some configs.  This would be where the touch listener is setup to do something.
@@ -17,23 +15,20 @@ import static android.view.MotionEvent.INVALID_POINTER_ID;
 
 public class MyGLSurfaceView extends GLSurfaceView {
 
-    private static final String TAG = "MyGLSurfaceView: ";
+    private static final String TAG = "MyGLSurfaceView";
 
     private MyGLRenderer renderer;
-
+    private ScaleGestureDetector mScaleDetector;
+    
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
+    private float mScaleFactor = 1.0f;
     private float previousX;
     private float previousY;
-
-    private float mScaleFactor = 1.0f;
-    private ScaleGestureDetector mScaleDetector;
-
-    private MyScaleGestures myScaleGestures;
 
     public MyGLSurfaceView(Context context) {
         super(context);
 
-        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+
         // Create an OpenGL ES 3.0 context.
         setEGLContextClientVersion(3);
 
@@ -45,9 +40,9 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        // create listener for touches and scaling
+        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
 
-        //myScaleGestures = new MyScaleGestures(this.getContext());
-        //myScaleGestures.onTouch
         Log.e(TAG, "message from MyGLSurfaceView()");
     }
 
@@ -55,9 +50,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
             mScaleFactor *= scaleGestureDetector.getScaleFactor();
-            //mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
             mScaleFactor = Math.max(0.0f, Math.min(mScaleFactor, 4.0f));
-
             Log.e(TAG, "message from ScaleListener()");
             renderer.setScale(mScaleFactor);
             return true;
