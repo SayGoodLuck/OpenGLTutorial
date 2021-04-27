@@ -25,7 +25,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private float mAngleX = 0;
     private float mAngleY = 0;
     private float mAngleZ = 0;
-    private float scale = 1.f;
+    private float scale = 0.5f;
 
     private static final float Z_NEAR = 1f;
     private static final float Z_FAR = 40f;
@@ -36,10 +36,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
 
-    //
     public MyGLRenderer(Context context) {
-        //cube can not be instianated here, because of "no egl context"  no clue.
-        //do it in onSurfaceCreate and it is fine.  odd, but workable solution.
+        // cube can not be instianated here, because of "no egl context"  no clue.
+        // do it in onSurfaceCreate and it is fine.  odd, but workable solution.
     }
 
     ///
@@ -100,13 +99,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     // Initialize the shader and program object
     //
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-        //set the clear buffer color to light gray.
-        //GLES30.glClearColor(0.9f, .9f, 0.9f, 0.9f);
-        //set the clear buffer color to a dark grey.
+        // set the clear buffer color to light gray.
+        // GLES30.glClearColor(0.9f, .9f, 0.9f, 0.9f);
+        // set the clear buffer color to a dark grey.
         GLES30.glClearColor(0.1f, .1f, 0.1f, 0.9f);
-        //initialize the cube code for drawing.
+        // initialize the cube code for drawing.
         mCube = new Cube();
-        //if we had other objects setup them up here as well.
+        // if we had other objects setup them up here as well.
     }
 
     // /
@@ -116,7 +115,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Clear the color buffer  set above by glClearColor.
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        //need this otherwise, it will over right stuff and the cube will look wrong!
+        // need this otherwise, it will over right stuff and the cube will look wrong!
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
 
         // Set the camera position (View matrix)  note Matrix is an include, not a declared method.
@@ -125,29 +124,30 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Create a rotation and translation for the cube
         Matrix.setIdentityM(mRotationMatrix, 0);
 
-        //move the cube up/down and left/right
-        Matrix.translateM(mRotationMatrix, 0, 0, 0, mAngleZ);
-
-        //mangle is how fast, x,y,z which directions it rotates.
-        //Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
-        // Matrix.rotateM(mRotationMatrix, 0, mAngleZ, 0.0f, 0.0f, 1.0f);
+        // mangle is how fast, x,y,z which directions it rotates.
+        // mAngleX & mAngleY taken from user
         Matrix.rotateM(mRotationMatrix, 0, mAngleY, 1.0f, 0.0f, 0.0f);
         Matrix.rotateM(mRotationMatrix, 0, mAngleX, 0.0f, 1.0f, 0.0f);
+        // mAngle is constant rotation
         Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
-        Matrix.rotateM(mRotationMatrix, 0, scale, 0.0f, 0.0f, 1.0f);
+
+        // scaling
+        Matrix.scaleM(mRotationMatrix, 0, scale, scale, scale);
+
         // combine the model with the view matrix
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mRotationMatrix, 0);
 
         // combine the model-view with the projection matrix
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 
+        // draw cube
         mCube.draw(mMVPMatrix);
 
         //change the angle, so the cube will spin.
         mAngle += .4;
     }
 
-    // /
+    //
     // Handle surface changes
     //
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
@@ -158,11 +158,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         float aspect = (float) width / height;
 
         // this projection matrix is applied to object coordinates
-        //no idea why 53.13f, it was used in another example and it worked.
+        // no idea why 53.13f, it was used in another example and it worked.
         Matrix.perspectiveM(mProjectionMatrix, 0, 53.13f, aspect, Z_NEAR, Z_FAR);
     }
 
-    //used the touch listener to rotate the cube up/down (y) and left/right (x)
+    // used the touch listener to rotate the cube up/down (y) and left/right (x)
     public float getAngleX() {
         return mAngleX;
     }
@@ -171,17 +171,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         return mAngleY;
     }
 
-    public void setAngle(float angle) {
-        mAngle = angle;
-    }
-
-    public float getAngle() {
-        return mAngle;
-    }
-
     public void setScale(float scale) {
         this.scale = scale;
     }
+
     public void setAngleX(float mAngleX) {
         this.mAngleX = mAngleX;
     }

@@ -47,6 +47,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         //myScaleGestures = new MyScaleGestures(this.getContext());
+        //myScaleGestures.onTouch
         Log.e(TAG, "message from MyGLSurfaceView()");
     }
 
@@ -55,7 +56,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
             mScaleFactor *= scaleGestureDetector.getScaleFactor();
             //mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
-            mScaleFactor = Math.max(1.0f, Math.min(mScaleFactor, 4.0f));
+            mScaleFactor = Math.max(0.0f, Math.min(mScaleFactor, 4.0f));
+
             Log.e(TAG, "message from ScaleListener()");
             renderer.setScale(mScaleFactor);
             return true;
