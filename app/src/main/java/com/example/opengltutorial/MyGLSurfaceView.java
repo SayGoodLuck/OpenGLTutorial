@@ -54,9 +54,10 @@ public class MyGLSurfaceView extends GLSurfaceView {
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
             mScaleFactor *= scaleGestureDetector.getScaleFactor();
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
+            //mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
+            mScaleFactor = Math.max(1.0f, Math.min(mScaleFactor, 4.0f));
             Log.e(TAG, "message from ScaleListener()");
-            //renderer.setScale(mScaleFactor);
+            renderer.setScale(mScaleFactor);
             return true;
         }
     }
@@ -66,14 +67,13 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
-        Log.e(TAG, "message from onTouchEvent()");
-        Log.e(TAG, String.valueOf(MotionEvent.actionToString(e.getAction())));
-        Log.e(TAG, String.valueOf(MotionEvent.actionToString(e.getActionMasked())));
 
         mScaleDetector.onTouchEvent(e);
 
         float x = e.getX();
         float y = e.getY();
+
+        Log.e(TAG, "tap on point (x,y): " + x + " " + y);
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:

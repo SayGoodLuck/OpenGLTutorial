@@ -25,7 +25,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private float mAngleX = 0;
     private float mAngleY = 0;
     private float mAngleZ = 0;
-
+    private float scale = 1.f;
 
     private static final float Z_NEAR = 1f;
     private static final float Z_FAR = 40f;
@@ -134,6 +134,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         Matrix.rotateM(mRotationMatrix, 0, mAngleY, 1.0f, 0.0f, 0.0f);
         Matrix.rotateM(mRotationMatrix, 0, mAngleX, 0.0f, 1.0f, 0.0f);
         Matrix.rotateM(mRotationMatrix, 0, mAngle, 1.0f, 1.0f, 1.0f);
+        Matrix.rotateM(mRotationMatrix, 0, scale, 0.0f, 0.0f, 1.0f);
         // combine the model with the view matrix
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mRotationMatrix, 0);
 
@@ -178,6 +179,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         return mAngle;
     }
 
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
     public void setAngleX(float mAngleX) {
         this.mAngleX = mAngleX;
     }
