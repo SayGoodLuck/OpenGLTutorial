@@ -100,8 +100,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     // Initialize the shader and program object
     //
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-
-
         //set the clear buffer color to light gray.
         //GLES30.glClearColor(0.9f, .9f, 0.9f, 0.9f);
         //set the clear buffer color to a dark grey.
@@ -115,7 +113,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     // Draw a triangle using the shader pair created in onSurfaceCreated()
     //
     public void onDrawFrame(GL10 glUnused) {
-
         // Clear the color buffer  set above by glClearColor.
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 

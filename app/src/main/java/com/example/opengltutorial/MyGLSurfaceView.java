@@ -26,10 +26,14 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private float previousY;
 
     private float mScaleFactor = 1.0f;
+    private ScaleGestureDetector mScaleDetector;
+
+    private MyScaleGestures myScaleGestures;
 
     public MyGLSurfaceView(Context context) {
         super(context);
 
+        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         // Create an OpenGL ES 3.0 context.
         setEGLContextClientVersion(3);
 
@@ -42,7 +46,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-        //mScaleDetector = new ScaleGestureDetector(context, new MyGestureListener());
+        //myScaleGestures = new MyScaleGestures(this.getContext());
         Log.e(TAG, "message from MyGLSurfaceView()");
     }
 
@@ -62,6 +66,12 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
+        Log.e(TAG, "message from onTouchEvent()");
+        Log.e(TAG, String.valueOf(MotionEvent.actionToString(e.getAction())));
+        Log.e(TAG, String.valueOf(MotionEvent.actionToString(e.getActionMasked())));
+
+        mScaleDetector.onTouchEvent(e);
+
         float x = e.getX();
         float y = e.getY();
 
@@ -75,6 +85,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 renderer.setAngleY(renderer.getAngleY() + dy * TOUCH_SCALE_FACTOR);
 
                 requestRender();
+
         }
 
         previousX = x;
